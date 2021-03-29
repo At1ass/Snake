@@ -8,4 +8,4 @@ sudo apt install build-essntials libncurses
 
 #Compile game
 
-gcc hello.c -lncurses -o snake
+gcc hello.c snake_body.c -lncurses -o snake
