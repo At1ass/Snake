@@ -84,6 +84,7 @@ void swap(int x, int y)
 	if(field[snake_body->x][snake_body->y] == 'o')
 	{
 		printw("YOU FAILED\n");
+		nocbreak();
 		getch();
 		endwin();
 		exit(0);
