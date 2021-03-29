@@ -4,7 +4,7 @@
 
 #Install ncurses and build-essentials
 
-sudo apt install build-essntials libncurses
+sudo apt install build-essentials libncurses
 
 #Compile game
 
