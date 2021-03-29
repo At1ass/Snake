@@ -2,7 +2,7 @@
 
 #For build game you need GCC and libncurses
 
-#Install ncurses and buil-essentials
+#Install ncurses and build-essentials
 
 sudo apt install build-essntials libncurses
 
