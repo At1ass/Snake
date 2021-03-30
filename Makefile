@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=$(shell pkg-config --cflags ncurses) -c
 LDFLAGS=$(shell pkg-config --libs ncurses) -o
-SOURCES=hello.c snake_body.c
+SOURCES=game.c snake_body.c field.c
 OBJECTS=$(SOURCES:%.c=%.o)
 EXECUTABLE=snake
 
