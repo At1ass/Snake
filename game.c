@@ -6,6 +6,8 @@
 #include "snake_body.h"
 #include "field.h"
 
+#define SET_POS(a, RC) !((snake_body->a - a) == field->RC - 1 || (snake_body->a - a) == 0) ? snake_body->a - a : field->RC - 1 - snake_body->a;
+
 game_field *field;
 
 int score = 0;
@@ -32,15 +34,20 @@ void move_snake(int x, int y)
 	bool isMoveX = true;
 	bool isMoveY = true;
 	bool need_fruit = false;
+
 	field->area[snake_body->x][snake_body->y] = ' ';
+
 	int tmp_X = snake_body->x, tmp_Y = snake_body->y;
-	snake_body->x = !((snake_body->x - x) ==field->ROW - 1 || (snake_body->x - x) == 0) ? snake_body->x - x : field->ROW - 1 - snake_body->x;
-	snake_body->y = !((snake_body->y - y) == field->COL - 1 || (snake_body->y - y) == 0) ? snake_body->y - y : field->COL - 1 - snake_body->y;
+
+	snake_body->x = SET_POS(x, ROW);
+	snake_body->y = SET_POS(y, COL);
 	
 	if(field->area[snake_body->x][snake_body->y] == 'o')
 	{
 		printw("YOU FAILED\n");
 		nocbreak();
+		
+		game_field_cleanup(&field);
 		getch();
 		endwin();
 		exit(0);
@@ -86,6 +93,54 @@ void move_snake(int x, int y)
 		gen_fruit();
 }
 
+void Draw()
+{
+	erase();
+
+	printw("SCORE: %d | SPEED: %d", score, 5 - speed);
+	for(int i = 0; i < field->ROW; i++) {
+		for(int j = 0; j < field->COL; ++j) {
+			int key_pair = 4;
+			if(field->area[i][j] == 'B') {
+				key_pair = 3;
+			}
+			if(field->area[i][j] == 'o') {
+				key_pair = 1;
+			}
+			if(field->area[i][j] == 'A') {
+				key_pair = 5;
+			}
+			if(field->area[i][j] == '0') {
+				key_pair = 2;
+			}
+
+			attron(COLOR_PAIR(key_pair));
+			printw("%c%c", field->area[i][j], field->area[i][j]);
+			attroff(COLOR_PAIR(key_pair));
+		}
+
+		printw("\n");
+
+	}
+	refresh();
+}
+
+void Speed_change() 
+{
+	static bool is_change = false;
+
+	if(score % 15 == 0 && is_change)
+	{
+		halfdelay(--speed);
+		is_change = false;
+	}
+	else
+	{
+		if(score % 15 != 0)
+			is_change = true;
+	}
+}
+
 
 
 int main()
@@ -105,6 +160,8 @@ int main()
 	printf("11 %d", field->COL);
 	if(has_colors() == FALSE)
 	{
+		
+		game_field_cleanup(&field);
 		endwin();
 		exit(EXIT_FAILURE);
 	}
@@ -126,52 +183,9 @@ int main()
 	
 	while(1){
 
-		erase();
+		Draw();
 
-		printw("SCORE: %d | SPEED: %d | xW yW: %d %d", score, 5 - speed, xW, yW);
-		for(int i = 0; i < field->ROW; i++)
-		{
-			for(int j = 0; j < field->COL; ++j)
-			{
-				int key_pair = 4;
-				if(field->area[i][j] == 'B')
-				{
-					key_pair = 3;
-				}
-				if(field->area[i][j] == 'o')
-				{
-					key_pair = 1;
-				}
-				if(field->area[i][j] == 'A')
-				{
-					key_pair = 5;
-				}
-				if(field->area[i][j] == '0')
-				{
-					key_pair = 2;
-				}
-
-				attron(COLOR_PAIR(key_pair));
-				printw("%c%c", field->area[i][j], field->area[i][j]);
-				attroff(COLOR_PAIR(key_pair));
-			}
-
-			printw("\n");
-
-
-		}
-		refresh();
-
-		if(score % 15 == 0 && is_change)
-		{
-			halfdelay(--speed);
-			is_change = false;
-		}
-		else
-		{
-			if(score % 15 != 0)
-				is_change = true;
-		}
+		Speed_change();
 
 		int input = getch();
 		if(input == KEY_UP)
@@ -194,10 +208,10 @@ int main()
 			x = 0;
 			y = -1;
 		}
-			move_snake(x, y);
+		move_snake(x, y);
 	}
 
-	free(field);
+	game_field_cleanup(&field);
 	getch();
 
 	endwin();

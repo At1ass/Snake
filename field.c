@@ -34,3 +34,9 @@ game_field * init_field()
 
 	return field;
 }
+
+void game_field_cleanup(game_field **field)
+{
+	free((*field)->field_ops_t);
+	free((*field));
+}

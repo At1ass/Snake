@@ -29,6 +29,8 @@ void init_game_field_size_t(game_field **field, int row, int col);
 
 game_field * init_field();
 
+void game_field_cleanup(game_field **field);
+
 
 
 
