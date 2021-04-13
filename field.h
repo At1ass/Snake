@@ -31,8 +31,8 @@ game_field * init_field();
 
 void game_field_cleanup(game_field **field);
 
+void generate_troubles(game_field **field, int heigth, int width);
 
-
-
+static void game_field_level_create(game_field **field);
 
 #endif

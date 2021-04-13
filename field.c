@@ -1,4 +1,9 @@
+#include <string.h>
+#include <stdlib.h>
 #include "field.h"
+#include "troubles.h"
+
+#define RANGE	6
 
 void generate_game_area_t(game_field **field)
 {
@@ -39,4 +44,43 @@ void game_field_cleanup(game_field **field)
 {
 	free((*field)->field_ops_t);
 	free((*field));
+}
+
+void generate_troubles(game_field **field, int heigth, int width)
+{
+	int start_x;// = heigth / 3;
+	int start_y;// = width / 3;
+
+	int i = 10;
+	do {
+		//(*field)->area[start_x][start_y] = 'T';
+
+		do
+		{
+			start_x = rand() % (heigth - 5) + 1;
+			start_y = rand() % (width - 5) + 1;
+			if((*field)->area[start_x][start_y] == ' ') {
+				//(*field)->area[start_x][start_y] = 'T';
+				int index = rand() % 3;
+				memcpy((*field)->area[start_x] + start_y, troubles[index][0], 3 * sizeof(char)); 
+				memcpy((*field)->area[start_x + 1] + start_y, troubles[index][1], 3 * sizeof(char)); 
+				memcpy((*field)->area[start_x + 2] + start_y, troubles[index][2], 3 * sizeof(char)); 
+
+				break;
+			}
+
+		}while(1);
+	
+	}
+	while(--i);
+	//memcpy((*field)->area[start_x] + start_y, troubles[0][0], 3 * sizeof(char)); 
+	//memcpy((*field)->area[start_x + 1] + start_y, troubles[0][1], 3 * sizeof(char)); 
+	//memcpy((*field)->area[start_x + 2] + start_y, troubles[0][2], 3 * sizeof(char)); 
+}
+
+void game_field_level_create(game_field **field)
+{
+	game_field_cleanup(field);
+	generate_game_area_t(field);
+	//generate_troubles(field);
 }

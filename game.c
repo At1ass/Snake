@@ -5,7 +5,7 @@
 
 #include "snake_body.h"
 #include "field.h"
-
+#include "movement.h"
 #define SET_POS(a, RC) !((snake_body->a - a) == field->RC - 1 || (snake_body->a - a) == 0) ? snake_body->a - a : field->RC - 1 - snake_body->a;
 
 game_field *field;
@@ -21,66 +21,58 @@ void gen_fruit()
 	int y; 
 	do
 	{
-		x = rand() % 8 + 1;
-		y = rand() % 8 + 1;
+		x = rand() % (field->ROW - 2) + 1;
+		y = rand() % (field->COL - 2) + 1;
+
 	}
 	while(field->area[x][y] == 'B' || field->area[x][y] == 'o');
 	
 	field->area[x][y] = 'A';
 }
 
+void game_over()
+{
+
+	printw("YOU FAILED\n");
+	nocbreak();
+	
+	game_field_cleanup(&field);
+	getch();
+	endwin();
+	exit(0);
+}
+
 void move_snake(int x, int y)
 {
-	bool isMoveX = true;
-	bool isMoveY = true;
-	bool need_fruit = false;
-
-	field->area[snake_body->x][snake_body->y] = ' ';
-
-	int tmp_X = snake_body->x, tmp_Y = snake_body->y;
-
+	int tmp_X = snake_body->x;
+	int tmp_Y = snake_body->y;
+	
 	snake_body->x = SET_POS(x, ROW);
 	snake_body->y = SET_POS(y, COL);
 	
-	if(field->area[snake_body->x][snake_body->y] == 'o')
+	if((field->area[snake_body->x][snake_body->y] == 'o') ||
+		(field->area[snake_body->x][snake_body->y] == 'T'))
 	{
-		printw("YOU FAILED\n");
-		nocbreak();
-		
-		game_field_cleanup(&field);
-		getch();
-		endwin();
-		exit(0);
+		game_over();
 	}
 
-	if((snake_body->x == snake_body->next->x) &&
-	  	(snake_body->y == snake_body->next->y) )
-	  {
-	  	snake_body->x = tmp_X;
-		snake_body->y = tmp_Y;
-	  }
 	if(field->area[snake_body->x][snake_body->y] == 'A')
 	{
 		++score;
 		add_tail(&snake_body);
-		need_fruit = true;
+		gen_fruit();
 	}
 	field->area[snake_body->x][snake_body->y] = 'B';
-
-	isMoveX = ((tmp_X - snake_body->x) == 0) ? false : true;
-	isMoveY = ((tmp_Y - snake_body->y) == 0) ? false : true;
 
 	Snake *tmp = snake_body->next;
 	while(tmp != NULL) 
 	{
-		field->area[tmp->x][tmp->y] = ' ';
-		int tx = tmp->x, ty = tmp->y;
-		if(isMoveX || isMoveY){ 
-			tmp->x = tmp_X;
-			tmp->y = tmp_Y;
-		}
-		
-	
+		int tx = tmp->x;
+		int ty = tmp->y;
+
+		tmp->x = tmp_X;
+		tmp->y = tmp_Y;
+
 		field->area[tmp->x][tmp->y] = 'o';
 
 		tmp_X = tx;
@@ -89,14 +81,11 @@ void move_snake(int x, int y)
 		tmp = tmp->next;
 	}
 
-	if(need_fruit)
-		gen_fruit();
+	field->area[tmp_X][tmp_Y] = ' ';
 }
 
 void Draw()
 {
-	erase();
-
 	printw("SCORE: %d | SPEED: %d", score, 5 - speed);
 	for(int i = 0; i < field->ROW; i++) {
 		for(int j = 0; j < field->COL; ++j) {
@@ -110,7 +99,8 @@ void Draw()
 			if(field->area[i][j] == 'A') {
 				key_pair = 5;
 			}
-			if(field->area[i][j] == '0') {
+			if(field->area[i][j] == '0' || 
+				field->area[i][j] == 'T') {
 				key_pair = 2;
 			}
 
@@ -156,6 +146,7 @@ int main()
 	field = init_field();
 	field->field_ops_t->init_game_field_size(&field, xW, yW);
 	field->field_ops_t->generate_game_area(&field);
+	generate_troubles(&field, field->ROW, field->COL);
 
 	printf("11 %d", field->COL);
 	if(has_colors() == FALSE)
@@ -183,6 +174,7 @@ int main()
 	
 	while(1){
 
+		erase();
 		Draw();
 
 		Speed_change();
@@ -190,23 +182,19 @@ int main()
 		int input = getch();
 		if(input == KEY_UP)
 		{
-			x = 1;
-			y = 0;
+			MOVE_UP
 		}
 		if(input == KEY_DOWN)
 		{
-			x = -1;
-			y = 0;
+			MOVE_DOWN
 		}
 		if(input == KEY_LEFT)
 		{
-			x = 0;
-			y = 1;
+			MOVE_LEFT
 		}
 		if(input == KEY_RIGHT)
 		{
-			x = 0;
-			y = -1;
+			MOVE_RIGHT
 		}
 		move_snake(x, y);
 	}
