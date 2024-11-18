@@ -18,7 +18,7 @@ Snake *snake_body = NULL;
 void gen_fruit()
 {
 	int x;
-	int y; 
+	int y;
 	do
 	{
 		x = rand() % (field->ROW - 2) + 1;
@@ -26,7 +26,7 @@ void gen_fruit()
 
 	}
 	while(field->area[x][y] == 'B' || field->area[x][y] == 'o');
-	
+
 	field->area[x][y] = 'A';
 }
 
@@ -35,7 +35,7 @@ void game_over()
 
 	printw("YOU FAILED\n");
 	nocbreak();
-	
+
 	game_field_cleanup(&field);
 	getch();
 	endwin();
@@ -46,10 +46,10 @@ void move_snake(int x, int y)
 {
 	int tmp_X = snake_body->x;
 	int tmp_Y = snake_body->y;
-	
+
 	snake_body->x = SET_POS(x, ROW);
 	snake_body->y = SET_POS(y, COL);
-	
+
 	if((field->area[snake_body->x][snake_body->y] == 'o') ||
 		(field->area[snake_body->x][snake_body->y] == 'T'))
 	{
@@ -65,7 +65,7 @@ void move_snake(int x, int y)
 	field->area[snake_body->x][snake_body->y] = 'B';
 
 	Snake *tmp = snake_body->next;
-	while(tmp != NULL) 
+	while(tmp != NULL)
 	{
 		int tx = tmp->x;
 		int ty = tmp->y;
@@ -99,7 +99,7 @@ void Draw()
 			if(field->area[i][j] == 'A') {
 				key_pair = 5;
 			}
-			if(field->area[i][j] == '0' || 
+			if(field->area[i][j] == '0' ||
 				field->area[i][j] == 'T') {
 				key_pair = 2;
 			}
@@ -115,7 +115,7 @@ void Draw()
 	refresh();
 }
 
-void Speed_change() 
+void Speed_change()
 {
 	static bool is_change = false;
 
@@ -131,7 +131,15 @@ void Speed_change()
 	}
 }
 
-
+bool
+opposite(const size_t x,
+        const size_t prev_x,
+        const size_t y,
+        const size_t prev_y)
+{
+    return (x == -prev_x && y == prev_y)
+        || (x == prev_x && y == -prev_y);
+}
 
 int main()
 {
@@ -139,10 +147,11 @@ int main()
 	int xW, yW;
 	int x = -1, y = 0;
 	int is_change = false;
+    size_t prev_x = 0, prev_y = 0;
 	initscr();
-	
+
 	getmaxyx(stdscr ,yW, xW);
-	
+
 	field = init_field();
 	field->field_ops_t->init_game_field_size(&field, xW, yW);
 	field->field_ops_t->generate_game_area(&field);
@@ -151,7 +160,7 @@ int main()
 	printf("11 %d", field->COL);
 	if(has_colors() == FALSE)
 	{
-		
+
 		game_field_cleanup(&field);
 		endwin();
 		exit(EXIT_FAILURE);
@@ -165,13 +174,13 @@ int main()
 	init_pair(5, COLOR_MAGENTA, COLOR_MAGENTA);
 
 	noecho();
-	halfdelay(speed);	
+	halfdelay(speed);
 	keypad(stdscr, TRUE);
 
 	add_tail(&snake_body);
 	add_tail(&snake_body);
 	add_tail(&snake_body);
-	
+
 	while(1){
 
 		erase();
@@ -180,23 +189,32 @@ int main()
 		Speed_change();
 
 		int input = getch();
-		if(input == KEY_UP)
+
+		if(input == KEY_UP || input == 'k')
 		{
 			MOVE_UP
 		}
-		if(input == KEY_DOWN)
+		if(input == KEY_DOWN || input == 'j')
 		{
 			MOVE_DOWN
 		}
-		if(input == KEY_LEFT)
+		if(input == KEY_LEFT || input == 'h')
 		{
 			MOVE_LEFT
 		}
-		if(input == KEY_RIGHT)
+		if(input == KEY_RIGHT || input == 'l')
 		{
 			MOVE_RIGHT
 		}
+
+        if (opposite(x, prev_x, y, prev_y)) {
+            x = prev_x;
+            y = prev_y;
+        }
 		move_snake(x, y);
+
+        prev_x = x;
+        prev_y = y;
 	}
 
 	game_field_cleanup(&field);
